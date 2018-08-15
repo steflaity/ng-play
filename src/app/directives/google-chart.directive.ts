@@ -1,5 +1,10 @@
 import { Directive, ElementRef, Input, OnInit, OnChanges } from '@angular/core'
 
+export class ChartFormatter {
+    constructor(public formatter: any, public columns: number[]) {
+    }
+}
+
 declare let google: any
 declare let googleLoaded: boolean
 
@@ -30,13 +35,16 @@ export class GoogleChartDirective implements OnInit, OnChanges {
     }
 
     public ngOnChanges() {
-        if (googleLoaded) google.charts.setOnLoadCallback(() =>
-            this.drawGraph(this.chartOptions, this.chartType, this.chartData, this.element))
+        if (googleLoaded) {
+            google.charts.setOnLoadCallback(() =>
+                this.drawGraph(this.chartOptions, this.chartType, this.chartData, this.element))
+        }
     }
 
     public setFormat(formatType: string, options: string, columns: number[]): boolean {
-        if (!googleLoaded)
+        if (!googleLoaded) {
             return false
+        }
 
         switch (formatType) {
             case 'Number':
@@ -52,15 +60,16 @@ export class GoogleChartDirective implements OnInit, OnChanges {
 
     private drawGraph(chartOptions, chartType, chartData, ele) {
         // don't attempt to load chart if there isn't any data
-        if (chartData === null || chartData === undefined || chartData.length === 1)
+        if (chartData === null || chartData === undefined || chartData.length === 1) {
             return
+        }
 
-        this.dataTable = google.visualization.arrayToDataTable(chartData, false);
+        this.dataTable = google.visualization.arrayToDataTable(chartData, false)
         this.applyFormat()
-        let data = this.dataTable
+        const data = this.dataTable
 
         google.charts.setOnLoadCallback(() => {
-            let wrapper = new google.visualization.ChartWrapper({
+            const wrapper = new google.visualization.ChartWrapper({
                 chartType: chartType,
                 dataTable: data,
                 options: chartOptions || {},
@@ -72,7 +81,7 @@ export class GoogleChartDirective implements OnInit, OnChanges {
 
     private applyFormat() {
         for (let i = 0; i < this.formatters.length; i++) {
-            let formatter = this.formatters[i].formatter
+            const formatter = this.formatters[i].formatter
 
             for (let j = 0; j < this.formatters[i].columns.length; j++) {
                 formatter.format(this.dataTable, this.formatters[i].columns[j])
@@ -81,18 +90,14 @@ export class GoogleChartDirective implements OnInit, OnChanges {
     }
 
     private setNumberFormat(options: string, columns: number[]): boolean {
-        if (!googleLoaded || !google || !google.visualization || !google.visualization.NumberFormat)
+        if (!googleLoaded || !google || !google.visualization || !google.visualization.NumberFormat) {
             return false
+        }
 
-        let formatter = new google.visualization.NumberFormat(JSON.parse(options))
-        let chartFormatter = new ChartFormatter(formatter, columns)
+        const formatter = new google.visualization.NumberFormat(JSON.parse(options))
+        const chartFormatter = new ChartFormatter(formatter, columns)
         this.formatters.push(chartFormatter)
 
-        return true;
-    }
-}
-
-export class ChartFormatter {
-    constructor(public formatter: any, public columns: number[]) {
+        return true
     }
 }
